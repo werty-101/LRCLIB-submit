@@ -2,9 +2,15 @@
 import pydirectinput
 import pygetwindow
 import subprocess
+import requests
+import os
+from urllib.parse import quote
 from time import sleep
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
+
+load_dotenv()
 screen_size = pydirectinput.size()
 middle_x, middle_y = round(screen_size[0] * 0.5), round(screen_size[1] * 0.5)
 
@@ -17,8 +23,6 @@ def custom_triple_click(location_x: int, location_y: int):
         #sleep(0.000000001)
         pydirectinput.mouseUp()
     pydirectinput.moveRel(-1, 0)
-
-
 
 
 # activates the macro
@@ -39,10 +43,27 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
     sleep((time_end - time_start) - 0.01)
 
 
-# finds lyrics using song title and author in:
-# https://www.eurobeat-prime.com/database.php?a=Author+Name&t=Song+Title&search=1
-def find_lyrics(song_title: str, author: str):
-    pass
+# finds lyrics using song title and author in genius
+# if genius fails, use lyrics from fandom
+# https://eurobeat.fandom.com/wiki/Special:Search?scope=internal&navigationSearch=true&query=SONG+TITLE
+# to test use Fever the Night by Matt Land
+def find_lyrics(song_title: str, author: str = ''):
+    # don't know how to deal with false-positives
+    # Thinking about scrapping the genius part and just scrape from genius
+    url = f"https://api.genius.com/search?q={quote(song_title)}%20{quote(author)}"
+    header = {
+        "Authorization": f"Bearer {os.getenv('API_KEY')}"
+    }
+    r = requests.get(url, headers=header)
+    try:
+        lyrics_url = r.json()["response"]["hits"][0]["result"]["url"]
+        print(lyrics_url)
+    except IndexError:
+        print("couldn't find genius lyrics, searching eurobeat wiki")
+        url = f"https://eurobeat.fandom.com/wiki/Special:Search?scope=internal&navigationSearch=true&query={song_title}"
+        r = requests.get(url)
+        # scrape using eurobeat wiki
+
 
 
 def main():
@@ -74,6 +95,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #genius_auth()
+    find_lyrics("Virtual Love Ken Martin")
+    #main()
 
 
