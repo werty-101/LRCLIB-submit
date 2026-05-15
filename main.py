@@ -3,6 +3,7 @@ import pydirectinput
 import pygetwindow
 import subprocess
 import requests
+import string
 import os
 from urllib.parse import quote
 from time import sleep
@@ -11,8 +12,11 @@ from bs4 import BeautifulSoup
 
 
 load_dotenv()
-screen_size = pydirectinput.size()
-middle_x, middle_y = round(screen_size[0] * 0.5), round(screen_size[1] * 0.5)
+SCREEN_SIZE = pydirectinput.size()
+MIDDLE_X, MIDDLE_Y = round(SCREEN_SIZE[0] * 0.5), round(SCREEN_SIZE[1] * 0.5)
+TITLE_DB = "lyric_database.txt"
+BLACKLIST = "blacklist.txt"
+SONGS_FOLDER = "lyrics_folder"
 
 
 def custom_triple_click(location_x: int, location_y: int):
@@ -25,10 +29,10 @@ def custom_triple_click(location_x: int, location_y: int):
     pydirectinput.moveRel(-1, 0)
 
 
-# activates the macro
+# activates the macro and moves mouse slightly to wake up the mouse
 def change_lyrics(time_start: int, lyric: str, time_end: int):
     # int(f"{(screen_size[0] * 0.5) :.0f}") looks ugly
-    custom_triple_click(middle_x, middle_y)
+    custom_triple_click(MIDDLE_X, MIDDLE_Y)
     subprocess.run('clip', text=True, input=lyric)
     print(lyric)
 
@@ -36,7 +40,7 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
     pydirectinput.press('v')
     sleep(0.01)
     pydirectinput.keyUp('ctrl')
-    pydirectinput.moveRel(0, round(screen_size[1] * 0.1))
+    pydirectinput.moveRel(0, round(SCREEN_SIZE[1] * 0.1))
     pydirectinput.moveRel(1, 0)
     pydirectinput.moveRel(-1, 0)
     pydirectinput.click()
@@ -46,10 +50,13 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
 # finds lyrics using song title and author in genius
 # if genius fails, use lyrics from fandom
 # https://eurobeat.fandom.com/wiki/Special:Search?scope=internal&navigationSearch=true&query=SONG+TITLE
-# to test use Fever the Night by Matt Land
-def find_lyrics(song_title: str, author: str = ''):
+# to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1984) by Helena
+# also try to use mixes into the player
+def find_lyrics_deprecated(song_title: str, author: str = ''):
     # don't know how to deal with false-positives
-    # Thinking about scrapping the genius part and just scrape from genius
+    # Thinking about scrapping the genius part and just scrape from the wiki
+    # can't find places for TIMED lyrics, I might have to make a local database for it (I don't want to)
+    # or upload lyrics to https://lrclib.net and netease
     url = f"https://api.genius.com/search?q={quote(song_title)}%20{quote(author)}"
     header = {
         "Authorization": f"Bearer {os.getenv('API_KEY')}"
@@ -64,6 +71,65 @@ def find_lyrics(song_title: str, author: str = ''):
         r = requests.get(url)
         # scrape using eurobeat wiki
 
+
+# find lyrics on local database, if fail search https://lrclib.net
+def find_lyrics(song_title: str, author: str = '', length: int = 0):
+    # todo: check if song is in blacklist.txt if yes go search on api
+
+    highest_match = 0
+    match_dict = {}
+    print()
+    song_items = song_title.translate(str.maketrans('', '', string.punctuation)).split()  # cleans up title name
+    song_items.extend(author.split())
+
+    # loop thru each item in SONGS_FOLDER,
+    for title in os.scandir(SONGS_FOLDER):
+        if title.is_file():
+            # compares common items between file title and song items and returns % as decimal
+            file_name = (os.path.basename(title).split(".")[0]
+                         .translate(str.maketrans('', '', string.punctuation)).split())  # cleans up file name
+            match_ratio = len(set(file_name).intersection(song_items)) / len(file_name)
+
+            if match_ratio > 0.50:
+                match_dict[match_ratio] = title
+
+            print(f"file name: {file_name}, compared with: {song_items}")
+            print(f"match %: {match_ratio} \n")
+            if match_ratio > highest_match:
+                highest_match = match_ratio
+                print(f"highest match: {highest_match}")
+
+    # title match
+    try:
+        with open(match_dict[highest_match].path, "r") as file:
+            print(file.read())
+            return file.readlines()
+    except KeyError:
+        print("could not find potential lyrics in local db, switching to lrclib api")
+
+        # try to get first result from search
+        if length > 0 and author:
+            params = {'artist_name': f"{author}", 'track_name': f"{song_title}", 'duration': length}
+        elif length > 0:
+            params = {'track_name': f"{song_title}", 'duration': length}
+        elif author:
+            params = {'artist_name': f"{author}", 'track_name': f"{song_title}"}
+        else:
+            params = {'track_name': f"{song_title}"}
+
+        r = requests.get("https://lrclib.net/api/get", params=params)
+
+        # if search fails, search local storage
+        # what to do abt false positives
+        # add them to the blacklist, so they can later be manually added to local db
+        if r.status_code == 404:
+            print("song not found on lrclib")
+            return f"{song_title} not found in local db nor api"
+        elif r.status_code == 200:
+            # fetched lyrics! download to db instead of printing
+            print(r.json()["syncedLyrics"])
+        else:
+            print(f"an unknown error occurred: r.status_code = {r.status_code}")
 
 
 def main():
@@ -80,7 +146,7 @@ def main():
 
     print(pygetwindow.getActiveWindowTitle())
     pydirectinput.press('1')  # sign gear slot
-    pydirectinput.click(middle_x, middle_y)
+    pydirectinput.click(MIDDLE_X, MIDDLE_Y)
     pydirectinput.moveRel(1, 0)
 
     sleep(0.5)
@@ -93,10 +159,11 @@ def main():
 
     pydirectinput.press('1')  # sign gear slot
 
-
+# to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1984) by Helena
 if __name__ == '__main__':
     #genius_auth()
-    find_lyrics("Virtual Love Ken Martin")
+    find_lyrics("Yo Mama", "Mama")
+    # close files
     #main()
 
 
