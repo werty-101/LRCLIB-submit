@@ -5,10 +5,8 @@ import subprocess
 import requests
 import string
 import os
-from urllib.parse import quote
 from time import sleep
 from dotenv import load_dotenv
-from bs4 import BeautifulSoup
 
 
 load_dotenv()
@@ -47,32 +45,7 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
     sleep((time_end - time_start) - 0.01)
 
 
-# finds lyrics using song title and author in genius
-# if genius fails, use lyrics from fandom
-# https://eurobeat.fandom.com/wiki/Special:Search?scope=internal&navigationSearch=true&query=SONG+TITLE
-# to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1984) by Helena
-# also try to use mixes into the player
-def find_lyrics_deprecated(song_title: str, author: str = ''):
-    # don't know how to deal with false-positives
-    # Thinking about scrapping the genius part and just scrape from the wiki
-    # can't find places for TIMED lyrics, I might have to make a local database for it (I don't want to)
-    # or upload lyrics to https://lrclib.net and netease
-    url = f"https://api.genius.com/search?q={quote(song_title)}%20{quote(author)}"
-    header = {
-        "Authorization": f"Bearer {os.getenv('API_KEY')}"
-    }
-    r = requests.get(url, headers=header)
-    try:
-        lyrics_url = r.json()["response"]["hits"][0]["result"]["url"]
-        print(lyrics_url)
-    except IndexError:
-        print("couldn't find genius lyrics, searching eurobeat wiki")
-        url = f"https://eurobeat.fandom.com/wiki/Special:Search?scope=internal&navigationSearch=true&query={song_title}"
-        r = requests.get(url)
-        # scrape using eurobeat wiki
-
-
-# find lyrics on local database, if fail search https://lrclib.net
+# find lyrics using song title and author on local database, if fail search https://lrclib.net
 def find_lyrics(song_title: str, author: str = '', length: int = 0):
     # todo: check if song is in blacklist.txt if yes go search on api
 
@@ -127,6 +100,7 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
             return f"{song_title} not found in local db nor api"
         elif r.status_code == 200:
             # fetched lyrics! download to db instead of printing
+            # todo: download lyrics to SONGS_FOLDER as .lrc (or txt i could not care any less as long as its readable)
             print(r.json()["syncedLyrics"])
         else:
             print(f"an unknown error occurred: r.status_code = {r.status_code}")
@@ -145,7 +119,7 @@ def main():
         attempts += 1
 
     print(pygetwindow.getActiveWindowTitle())
-    pydirectinput.press('1')  # sign gear slot
+    pydirectinput.press('1')  # sign gear slot (open)
     pydirectinput.click(MIDDLE_X, MIDDLE_Y)
     pydirectinput.moveRel(1, 0)
 
@@ -157,13 +131,13 @@ def main():
     change_lyrics(123, "hello guys", 125)
     change_lyrics(125, "i am using this to test stuff", 126)
 
-    pydirectinput.press('1')  # sign gear slot
+    pydirectinput.press('1')  # sign gear slot (close)
 
 # to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1984) by Helena
+# also try to use mixes into the player
 if __name__ == '__main__':
     #genius_auth()
     find_lyrics("Yo Mama", "Mama")
-    # close files
     #main()
 
 
