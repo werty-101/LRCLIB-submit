@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 SCREEN_SIZE = pydirectinput.size()
 MIDDLE_X, MIDDLE_Y = round(SCREEN_SIZE[0] * 0.5), round(SCREEN_SIZE[1] * 0.5)
-TITLE_DB = "lyric_database.txt"
-BLACKLIST = "blacklist.txt"
-SONGS_FOLDER = "lyrics_folder"
+BLACKLIST = "blacklist.txt"  # used for song titles that return wrong lyrics so they can be added manually
+SONGS_FOLDER = "lyrics_folder"  # todo: check if folder exists and check if its a folder item
 
 
 def custom_triple_click(location_x: int, location_y: int):
@@ -49,9 +48,9 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
 def find_lyrics(song_title: str, author: str = '', length: int = 0):
     # todo: check if song is in blacklist.txt if yes go search on api
 
+    print()
     highest_match = 0
     match_dict = {}
-    print()
     song_items = song_title.translate(str.maketrans('', '', string.punctuation)).split()  # cleans up title name
     song_items.extend(author.split())
 
@@ -63,10 +62,12 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
                          .translate(str.maketrans('', '', string.punctuation)).split())  # cleans up file name
             match_ratio = len(set(file_name).intersection(song_items)) / len(file_name)
 
+            # todo: if the match ratio reaches 1, stop the search and display lyrics
+
             if match_ratio > 0.50:
                 match_dict[match_ratio] = title
 
-            print(f"file name: {file_name}, compared with: {song_items}")
+            print(f"\nfile name: {file_name}, compared with: {song_items}")
             print(f"match %: {match_ratio} \n")
             if match_ratio > highest_match:
                 highest_match = match_ratio
@@ -81,16 +82,21 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
         print("could not find potential lyrics in local db, switching to lrclib api")
 
         # try to get first result from search
-        if length > 0 and author:
-            params = {'artist_name': f"{author}", 'track_name': f"{song_title}", 'duration': length}
-        elif length > 0:
-            params = {'track_name': f"{song_title}", 'duration': length}
-        elif author:
-            params = {'artist_name': f"{author}", 'track_name': f"{song_title}"}
-        else:
-            params = {'track_name': f"{song_title}"}
+        params = {'q': f"{song_title} {author}"}
+        header = {'User-Agent': 'rmm youtube bot v?.?.? (https://github.com/werty-101/rmm-youtube-bot)'}
 
-        r = requests.get("https://lrclib.net/api/get", params=params)
+        r = requests.get("https://lrclib.net/api/search", params=params, headers=header)
+
+        #if length > 0 and author:
+        #    params = {'artist_name': f"{author}", 'track_name': f"{song_title}", 'duration': length}
+        #elif length > 0:
+        #    params = {'track_name': f"{song_title}", 'duration': length}
+        #elif author:
+        #    params = {'artist_name': f"{author}", 'track_name': f"{song_title}"}
+        #else:
+        #    params = {'track_name': f"{song_title}"}
+        #
+        #r = requests.get("https://lrclib.net/api/search", params=params)
 
         # if search fails, search local storage
         # what to do abt false positives
@@ -100,8 +106,15 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
             return f"{song_title} not found in local db nor api"
         elif r.status_code == 200:
             # fetched lyrics! download to db instead of printing
-            # todo: download lyrics to SONGS_FOLDER as .lrc (or txt i could not care any less as long as its readable)
-            print(r.json()["syncedLyrics"])
+            # todo: add clean version of lyrics to database
+            print(r.json()[0]["syncedLyrics"])
+            print(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"))
+            if input("save lyrics? (y/n): ").lower() == 'y':
+                #f = open(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"), "x")
+                f = open(f"{SONGS_FOLDER}//{author} - {song_title}.lrc", 'x')
+                f.write(r.json()[0]["syncedLyrics"])
+                f.close()
+                print(f"saved lyrics to {SONGS_FOLDER} folder")
         else:
             print(f"an unknown error occurred: r.status_code = {r.status_code}")
 
@@ -137,7 +150,7 @@ def main():
 # also try to use mixes into the player
 if __name__ == '__main__':
     #genius_auth()
-    find_lyrics("Yo Mama", "Mama")
+    find_lyrics("Saturday Night Fever", "Dave Rodgers")
     #main()
 
 
