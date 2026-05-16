@@ -45,21 +45,21 @@ def change_lyrics(time_start: int, lyric: str, time_end: int):
 
 
 # find lyrics using song title and author on local database, if fail search https://lrclib.net
-def find_lyrics(song_title: str, author: str = '', length: int = 0):
+def find_lyrics(song_title: str, author: str = ''):
     # todo: check if song is in blacklist.txt if yes go search on api
 
     print()
     highest_match = 0
     match_dict = {}
-    song_items = song_title.translate(str.maketrans('', '', string.punctuation)).split()  # cleans up title name
-    song_items.extend(author.split())
+    song_items = song_title.translate(str.maketrans('', '', string.punctuation)).lower().split()  # cleans up title name
+    song_items.extend(author.lower().split())
 
     # loop thru each item in SONGS_FOLDER,
     for title in os.scandir(SONGS_FOLDER):
         if title.is_file():
             # compares common items between file title and song items and returns % as decimal
             file_name = (os.path.basename(title).split(".")[0]
-                         .translate(str.maketrans('', '', string.punctuation)).split())  # cleans up file name
+                         .translate(str.maketrans('', '', string.punctuation)).lower().split())  # cleans up file name
             match_ratio = len(set(file_name).intersection(song_items)) / len(file_name)
 
             # todo: if the match ratio reaches 1, stop the search and display lyrics
@@ -68,7 +68,7 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
                 match_dict[match_ratio] = title
 
             print(f"\nfile name: {file_name}, compared with: {song_items}")
-            print(f"match %: {match_ratio} \n")
+            print(f"match %: {match_ratio}, common items: {set(file_name).intersection(song_items)} \n")
             if match_ratio > highest_match:
                 highest_match = match_ratio
                 print(f"highest match: {highest_match}")
@@ -76,7 +76,7 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
     # title match
     try:
         with open(match_dict[highest_match].path, "r") as file:
-            print(file.read())
+            #print(file.read())
             return file.readlines()
     except KeyError:
         print("could not find potential lyrics in local db, switching to lrclib api")
@@ -107,8 +107,8 @@ def find_lyrics(song_title: str, author: str = '', length: int = 0):
         elif r.status_code == 200:
             # fetched lyrics! download to db instead of printing
             # todo: add clean version of lyrics to database
-            print(r.json()[0]["syncedLyrics"])
-            print(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"))
+            #print(r.json()[0]["syncedLyrics"])
+            #print(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"))
             if input("save lyrics? (y/n): ").lower() == 'y':
                 #f = open(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"), "x")
                 f = open(f"{SONGS_FOLDER}//{author} - {song_title}.lrc", 'x')
@@ -123,7 +123,12 @@ def main():
     attempts = 0
     assert attempts < 10, "could not switch to 'Roblox' window within 10 attempts"
     # initial switch
-    pygetwindow.getWindowsWithTitle('Roblox')[0].activate()
+    try:
+        pygetwindow.getWindowsWithTitle('Roblox')[0].activate()
+    except IndexError:
+        print("'Roblox' window not detected")
+        sleep(1)
+        exit(0)
 
     # switch to roblox window
     while pygetwindow.getActiveWindowTitle() != 'Roblox' and attempts < 10:
@@ -146,11 +151,24 @@ def main():
 
     pydirectinput.press('1')  # sign gear slot (close)
 
-# to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1984) by Helena
+
+def test_main():
+    # testing cuz I dont wanna launch app
+    # thinking abt removing author field bcuz song could be uploaded by someone else
+    # happens pretty often ^^^
+
+    print("in app")
+    # after title and author fetched, def fetch_vid_title:
+    song_title = 'With you (1994)'
+    author = 'Helena'
+    synced_lyrics = find_lyrics(song_title, author)
+    for i in range(len(synced_lyrics)):
+        print(synced_lyrics[i])
+
+
+# to test use: Fever the Night by Matt Land, Virtual Love by Ken Martin, and With you (1994) by Helena
 # also try to use mixes into the player
 if __name__ == '__main__':
-    #genius_auth()
-    find_lyrics("Saturday Night Fever", "Dave Rodgers")
-    #main()
+    test_main()
 
 
