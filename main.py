@@ -29,7 +29,6 @@ def change_lyrics(time_start: float, lyric: str, time_end: float):
     # int(f"{(screen_size[0] * 0.5) :.0f}") looks ugly
     custom_triple_click(MIDDLE_X, MIDDLE_Y)
     subprocess.run('clip', text=True, input=lyric)
-    print(lyric)
 
     pydirectinput.keyDown('ctrl')
     pydirectinput.press('v')
@@ -73,11 +72,11 @@ def find_lyrics(song_title: str, author: str = ''):
             if match_ratio > 0.50:
                 match_dict[match_ratio] = title
 
-            print(f"\nfile name: {file_name}, compared with: {song_items}")
-            print(f"match %: {match_ratio}, common items: {set(file_name).intersection(song_items)} \n")
+            #print(f"\nfile name: {file_name}, compared with: {song_items}")
+            #print(f"match %: {match_ratio}, common items: {set(file_name).intersection(song_items)} \n")
             if match_ratio > highest_match:
                 highest_match = match_ratio
-                print(f"highest match: {highest_match}")
+                #print(f"highest match: {highest_match}")
 
     # title match
     try:
@@ -111,7 +110,6 @@ def find_lyrics(song_title: str, author: str = ''):
             # fetched lyrics! download to db instead of printing
             # todo: add clean version of lyrics to database
             # if item exists / another try except (dont really want another tho)
-            print(r.json())
             print(f"\nlyrics found! from: {r.json()[0]["artistName"]} title: {r.json()[0]["trackName"]}\n")
             print("Lyrics:")
             print(r.json()[0]["syncedLyrics"])
@@ -159,8 +157,22 @@ def main():
     # thinking about doing something like for lyric in lyrics do change_lyrics
     # for that I'd need a list of all lyrics
 
-    change_lyrics(123, "hello guys", 125)
-    change_lyrics(125, "i am using this to test stuff", 126)
+    test_song = 'With you (1994)'
+    test_author = 'Helena'
+    synced_lyrics = find_lyrics(test_song, test_author)
+    if synced_lyrics is not None:
+        # separate the timestamp from the lyric then convert timestamp to seconds
+        for i in range(len(synced_lyrics)):
+            if i + 1 < len(synced_lyrics):
+                # PERFORMS VERY BAD ON LOW FPS
+                current_lyric = synced_lyrics[i].split(' ', 1)
+                timestamp = convert_to_seconds(current_lyric[0])
+                lyric_str = current_lyric[1].replace("\n", "")
+                next_timestamp = convert_to_seconds(synced_lyrics[i+1].split(' ', 1)[0])
+                change_lyrics(timestamp, lyric_str, next_timestamp)
+
+    else:
+        print("None returned")
 
     pydirectinput.press('1')  # sign gear slot (close)
 
@@ -176,11 +188,7 @@ def test_main():
     test_author = 'Helena'
     synced_lyrics = find_lyrics(test_song, test_author)
     if synced_lyrics is not None:
-        # separate the timestamp from the lyric
-        pass
-        # convert timestamp to seconds
-        pass
-        # after separation do
+        # separate the timestamp from the lyric then convert timestamp to seconds
         for i in range(len(synced_lyrics)):
             if i + 1 < len(synced_lyrics):
                 current_lyric = synced_lyrics[i].split(' ', 1)
@@ -197,6 +205,6 @@ def test_main():
 # more tests: In My Dreams by Denise, Can't Stay A Dreamy Girl by Nikita Jr
 # also try to use mixes into the player
 if __name__ == '__main__':
-    test_main()
+    main()
 
 
