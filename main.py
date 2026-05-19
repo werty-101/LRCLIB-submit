@@ -5,8 +5,7 @@ import subprocess
 import requests
 import string
 import os
-from time import sleep
-
+import time
 
 SCREEN_SIZE = pydirectinput.size()
 MIDDLE_X, MIDDLE_Y = round(SCREEN_SIZE[0] * 0.5), round(SCREEN_SIZE[1] * 0.5)
@@ -24,63 +23,78 @@ def custom_triple_click(location_x: int, location_y: int):
     pydirectinput.moveRel(-1, 0)
 
 
+def convert_to_seconds(timestamp: str):
+    seconds = timestamp.translate(str.maketrans('','', "[]")).split(":")
+    return round(float((int(seconds[0]) * 60) + float(seconds[1])), 2)
+
+
+def get_file_titles():
+    local_titles = {}  # key = dir, value = item parts
+    for title in os.scandir(SONGS_FOLDER):
+        if title.is_file():
+            file_dir = os.path.basename(title)
+            file_items = file_dir.split(".")[0].translate(str.maketrans('', '', string.punctuation)).lower().split()
+            local_titles[file_dir] = file_items
+
+    return local_titles
+
+
 # activates the macro and moves mouse slightly to wake up the mouse
 def change_lyrics(time_start: float, lyric: str, time_end: float):
     # int(f"{(screen_size[0] * 0.5) :.0f}") looks ugly
+    start_timer = time.perf_counter()
     custom_triple_click(MIDDLE_X, MIDDLE_Y)
     subprocess.run('clip', text=True, input=lyric)
 
     pydirectinput.keyDown('ctrl')
     pydirectinput.press('v')
-    sleep(0.01)
+    time.sleep(0.01)
     pydirectinput.keyUp('ctrl')
     pydirectinput.moveRel(0, round(SCREEN_SIZE[1] * 0.1))
     pydirectinput.moveRel(1, 0)
     pydirectinput.moveRel(-1, 0)
     pydirectinput.click()
-    sleep((time_end - time_start) - 0.01)
+    while time.perf_counter() - start_timer < (time_end - time_start):
+        time.sleep(0.001)
+
 
 def test_change_lyrics(time_start: float, lyric: str, time_end: float):
-    # so it needs two lyric items, lyric start [00:00.00] <Music>, [00:44.57] Living for you
-    # so it can do something like:
-    # print(lyric[0])
-    # sleep 44.57 - 0:00
+    start_timer = time.perf_counter()
     print(lyric)
-    sleep(time_end - time_start)
-    pass
+    while time.perf_counter() - start_timer < (time_end - time_start):
+        time.sleep(0.001)
+
 
 # find lyrics using song title and author on local database, if fail search https://lrclib.net
-def find_lyrics(song_title: str, author: str = ''):
+def find_lyrics(song_title: str, lyrics_folder: dict, author: str = ''):
     # todo: check if song is in to_be_added.txt if yes go search on api
 
-    print()
     highest_match = 0
     match_dict = {}
     song_items = song_title.translate(str.maketrans('', '', string.punctuation)).lower().split()  # cleans up title name
     song_items.extend(author.lower().split())
 
-    # loop thru each item in SONGS_FOLDER,
-    for title in os.scandir(SONGS_FOLDER):
-        if title.is_file():
-            # compares common items between file title and song items and returns % as decimal
-            file_name = (os.path.basename(title).split(".")[0]
-                         .translate(str.maketrans('', '', string.punctuation)).lower().split())  # cleans up file name
-            match_ratio = len(set(file_name).intersection(song_items)) / len(file_name)
+    # loop thru each file in SONGS_FOLDER,
+    for file in lyrics_folder:
+        match_ratio = len(set(lyrics_folder[file]).intersection(song_items)) / len(lyrics_folder[file])
 
-            # todo: if the match ratio reaches 1, stop the search and display lyrics
+        if match_ratio > 0.50:
+            match_dict[match_ratio] = file
+            if match_ratio == 1:
+                with open(f"{SONGS_FOLDER}//{match_dict[match_ratio]}", "r") as text_file:
+                    # print(text_file.read())
+                    return text_file.readlines()
 
-            if match_ratio > 0.50:
-                match_dict[match_ratio] = title
+        # print(f"\nfile name: {file_name}, compared with: {song_items}")
+        # print(f"match %: {match_ratio}, common items: {set(file_name).intersection(song_items)} \n")
+        if match_ratio > highest_match:
+            highest_match = match_ratio
 
-            #print(f"\nfile name: {file_name}, compared with: {song_items}")
-            #print(f"match %: {match_ratio}, common items: {set(file_name).intersection(song_items)} \n")
-            if match_ratio > highest_match:
-                highest_match = match_ratio
-                #print(f"highest match: {highest_match}")
+    print(lyrics_folder[match_dict[highest_match]])
 
     # title match
     try:
-        with open(match_dict[highest_match].path, "r") as file:
+        with open(f"{SONGS_FOLDER}//{match_dict[highest_match]}", "r") as file:
             #print(file.read())
             return file.readlines()
     except KeyError:
@@ -91,17 +105,6 @@ def find_lyrics(song_title: str, author: str = ''):
         header = {'User-Agent': 'rmm youtube bot v?.?.? (https://github.com/werty-101/rmm-youtube-bot)'}
 
         r = requests.get("https://lrclib.net/api/search", params=params, headers=header)
-
-        #if length > 0 and author:
-        #    params = {'artist_name': f"{author}", 'track_name': f"{song_title}", 'duration': length}
-        #elif length > 0:
-        #    params = {'track_name': f"{song_title}", 'duration': length}
-        #elif author:
-        #    params = {'artist_name': f"{author}", 'track_name': f"{song_title}"}
-        #else:
-        #    params = {'track_name': f"{song_title}"}
-        #
-        #r = requests.get("https://lrclib.net/api/search", params=params)
 
         # if search fails, search local storage
         # what to do abt false positives
@@ -126,9 +129,6 @@ def find_lyrics(song_title: str, author: str = ''):
         else:
             print(f"an unknown error occurred: r.status_code = {r.status_code}")
 
-def convert_to_seconds(time: str):
-    seconds = time.translate(str.maketrans('','', "[]")).split(":")
-    return round(float((int(seconds[0]) * 60) + float(seconds[1])), 2)
 
 def main():
     attempts = 0
@@ -138,13 +138,13 @@ def main():
         pygetwindow.getWindowsWithTitle('Roblox')[0].activate()
     except IndexError:
         print("'Roblox' window not detected")
-        sleep(1)
+        time.sleep(1)
         exit(0)
 
     # switch to roblox window
     while pygetwindow.getActiveWindowTitle() != 'Roblox' and attempts < 10:
         pygetwindow.getWindowsWithTitle('Roblox')[0].activate()
-        sleep(0.02)
+        time.sleep(0.02)
         attempts += 1
 
     print(pygetwindow.getActiveWindowTitle())
@@ -152,14 +152,15 @@ def main():
     pydirectinput.click(MIDDLE_X, MIDDLE_Y)
     pydirectinput.moveRel(1, 0)
 
-    sleep(0.5)
+    time.sleep(0.5)
 
     # thinking about doing something like for lyric in lyrics do change_lyrics
     # for that I'd need a list of all lyrics
 
     test_song = 'With you (1994)'
     test_author = 'Helena'
-    synced_lyrics = find_lyrics(test_song, test_author)
+    file_titles = get_file_titles()
+    synced_lyrics = find_lyrics(test_song, file_titles, test_author)
     if synced_lyrics is not None:
         # separate the timestamp from the lyric then convert timestamp to seconds
         for i in range(len(synced_lyrics)):
@@ -181,20 +182,22 @@ def test_main():
     # testing cuz I dont wanna launch app
     # thinking abt removing author field bcuz song could be uploaded by someone else
     # happens pretty often ^^^
-
+    file_titles = get_file_titles()
+    # file titles
     print("in app")
     # after title and author fetched, def fetch_vid_title:
     test_song = 'With you (1994)'
     test_author = 'Helena'
-    synced_lyrics = find_lyrics(test_song, test_author)
+    synced_lyrics = find_lyrics(test_song, file_titles, test_author)
     if synced_lyrics is not None:
         # separate the timestamp from the lyric then convert timestamp to seconds
         for i in range(len(synced_lyrics)):
             if i + 1 < len(synced_lyrics):
                 current_lyric = synced_lyrics[i].split(' ', 1)
                 timestamp = convert_to_seconds(current_lyric[0])
-                lyric_str = current_lyric[1]
+                lyric_str = current_lyric[1].replace("\n", "")
                 next_timestamp = convert_to_seconds(synced_lyrics[i+1].split(' ', 1)[0])
+                # print(round(end_time - start_time, 8))
                 test_change_lyrics(timestamp, lyric_str, next_timestamp)
 
     else:
@@ -205,6 +208,6 @@ def test_main():
 # more tests: In My Dreams by Denise, Can't Stay A Dreamy Girl by Nikita Jr
 # also try to use mixes into the player
 if __name__ == '__main__':
-    main()
+    test_main()
 
 
