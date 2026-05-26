@@ -122,7 +122,7 @@ def find_lyrics(song_title: str, lyrics_folder: dict, author: str = ''):
             # fetched lyrics! download to db instead of printing
             # todo: add clean version of lyrics to database
             # if item exists / another try except (dont really want another tho)
-            print(f"\nlyrics found! from: {r.json()[0]["artistName"]} title: {r.json()[0]["trackName"]}\n")
+            print(f"\nlyrics found! from: {r.json()[0]['artistName']} title: {r.json()[0]['trackName']}\n")
             print("Lyrics:")
             print(r.json()[0]["syncedLyrics"])
             # print(os.path.join(SONGS_FOLDER, f"{author} - {song_title}.lrc"))
