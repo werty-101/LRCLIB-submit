@@ -73,8 +73,7 @@ class Page1(Base):
             submit_lyrics.album_name = album.get()
             submit_lyrics.duration = duration.get()
             submit_lyrics.file_path = path
-            submit_lyrics.print_name()
-            submit_lyrics.synced_to_plain_lyrics()
+            submit_lyrics.main()
             # submit lyrics to function to like break down the lyrics
             # send it to main
 
@@ -118,6 +117,7 @@ class Page1(Base):
                 entry_field_dict[entry_key] = entry_value
 
         # file search frame
+        # TODO: clear previous name after file is browsed
         file_frame = tk.Frame(master=self, background=dark_mode_colors["primary"])
         tk.Label(master=file_frame, text="Lyric File Path",
                  background=dark_mode_colors["primary"],
@@ -140,10 +140,6 @@ class Page1(Base):
                                              entry_field_dict[3],
                                              self.file_dir))
         b.grid(row=3, column=0, columnspan=2, pady=(20, 50), sticky="n")
-
-
-
-
 
 
 # MainView class, used as a container for frames, in case other pages are added onto app
