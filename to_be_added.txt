@@ -1,4 +1,47 @@
 # title of songs that return wrong lyrics, so they can be added later
-
+# songs are based on my spotify playlist
 name4
 name5
+-- unrecognized -- (no time shown)
+Mark Farina - Twinstar (4:50) Note: appears in Spotify as: Mark Farina - "Twinstar fitness Version 156 Bpm" (2:52)
+Boogaboo - Burn Burn Get My Fire (5:20)
+Princess F. - Shadows in the Night (6:31)
+Pretty Woman, Bratt Sinclaire - Drive me Faster Now (5:14)
+Starlet - Without Your Love (5:58)
+Cindy - Push Me Boom Boom (Extended Mix) (5:21)
+Mark Farina - Virtual Love (4:52) Note: Appears in Spotify as: Mark Farina - "Virtual Love Remix - Factory Team Remix"
+Norma Sheffield - Maybe Tonite (Extended Mix) (4:45)
+MEGA NRG MAN - Supertonic Lady (Extended Mix) (4:36)
+
+
+-- recognized -- (no lyrics)
+Vicky Vale - Days of Thunder (5:53)
+Luke - Street Fighter (3:23) (Displays as 2:24 in-game)
+Vanessa - Hey Hey (6:32) (Displays as 1:29 in-game)
+Love & Pride - Shotgun Killer (5:48) (Displays as 1:18 in-ganme)
+
+
+
+-- misrecognized -- (right elements, wrong position, has time)
+Black Power - Rock You Baby (6:13)
+Jagger - Because of You (Eurobeat Version) (4:04)
+Donna, Bratt Sinclaire - On My Own (Extended Mix) (5:37)
+Bazooka Girl - Cantare Ballare - Happy Eurobeat (5:09)
+Bazooka Girl - Velfarre 2000 (Extended Mix) (5:27)
+Princess F. - Technotronic Flight (Extended) (5:40) (Displays as 5:39 in-game)
+Denise - In My Dreams (5:43) (Displays as 6:37 in-game)
+
+-- Has Lyrics --
+DOMINO - TORA TORA TORA (4:15) (Displays as 4:01 in-game)
+Mistika - Rain (5:15) (Displays as 2:51 in-game)
+(Italo-disco) Michael Fortunati - Into the Night (3:48)
+(Italo-disco) Radiorama - Aliens (4:13) (Displays as 4:15 in-game)
+(Italo-disco) Radiorama - Desire (3:52) (Displays as 3:49 in-game)
+
+-- Wrong Lyrics --
+(Italo-disco) Radiorama - Vampires (6:13) (Displays as 6:09 in-game)
+
+-- Not In Spotify --
+Alvin - Shocking Fever (incomplete Euromach version) (2:35)
+
+
