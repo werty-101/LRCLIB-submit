@@ -50,7 +50,7 @@ class Menu(tk.Frame):
         self.propagate(False)
 
         self.active_button = None
-        self.button_texts = ["Submit Lyrics to LRCLIB", "YouTube to MP3", "does nothing"]
+        self.button_texts = ["Submit Lyrics to LRCLIB", "YouTube to MP3"]
         self.buttons = []
 
         # loop for creating buttons and assigning them to self.buttons
@@ -73,9 +73,6 @@ class Menu(tk.Frame):
 
         self.buttons[1].config(command=lambda: page_switch(self.buttons[1], parent.p2))  # idiot
         self.buttons[1].pack(side="top")
-
-        self.buttons[2].config(command=lambda: page_switch(self.buttons[2], parent.p2))
-        self.buttons[2].pack(side="top")
 
         # switches page and sets the color of the button that is clicked as primary
         def page_switch(b_obj, page):
@@ -217,7 +214,12 @@ class Page2(Base):
         entry_container.grid(row=0, column=0)
 
         search_yt_button = tk.Button(self, text="Download", width=10, height=2)
+        search_yt_button.config(command=lambda: search_yt(link_entry, MP3S))
         search_yt_button.grid(row=1, column=0, sticky="n", pady=(0, 200))
+
+        def search_yt(entry, path):
+            submit_lyrics.yt_link = entry.get()
+            submit_lyrics.yt_to_mp3(path)
 
 
 # MainView class, used as a container for frames, in case other pages are added onto app
