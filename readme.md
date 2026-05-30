@@ -18,10 +18,20 @@
 
 <ol>
     <li>Go to <a href="https://subtitletools.com/timed-lyrics-editor">Timed Lyrics Editor</a> and create a .lrc file. 
-        Note: You only need to use the syncer tab, do add metadata</li>
+        Note: You only need to use the lyrics and syncer tab, do not add metadata</li>
     <li>Open up the tool and fill in all the spaces</li>
     <li>Click "Submit"</li>
 </ol>
+
+<h2>Future Plans</h2>
+
+<p>Doesn't guarantee that these will be added to the tool</p>
+
+<ul>
+    <li>Keep track of which songs have been uploaded.</li>
+    <li>Create a timed lyrics editor</li>
+    <li>Be able to convert videos to mp3 without ffmpeg</li>
+</ul>
 
 <h2>Known Issues</h2>
 
