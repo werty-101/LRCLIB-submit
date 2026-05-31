@@ -65,6 +65,7 @@ def to_seconds(dur):
             return int(dur)
         except ValueError:
             return "INVALID STRING"
+
     else:
         print(dur, dur.__class__)
         return "INVALID FORMAT"
@@ -107,9 +108,10 @@ def check_existing():
         return False
     else:
         print(f"unknown error, r.status_code: {r.status_code}")
-        return
+        return None
 
 
+# converts youtube video link to mp3 and saves it to path (MP3_FOLDER)
 def yt_to_mp3(path):
     ydl_options = {
         'format': 'm4a/bestaudio/best',
@@ -124,6 +126,7 @@ def yt_to_mp3(path):
         ydl.download([yt_link])
 
 
+# Main func, API calls to request-challenge and publish
 def main():
 
     # TODO: check if fields are filled
