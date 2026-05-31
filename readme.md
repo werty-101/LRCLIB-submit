@@ -30,20 +30,16 @@
 <ul>
     <li>Keep track of which songs have been uploaded.</li>
     <li>Create a timed lyrics editor</li>
-    <li>Be able to convert videos to mp3 without ffmpeg</li>
+    <li>Be able to convert videos to mp3 without ffmpeg or install ffmpeg automatically</li>
 </ul>
 
 <h2>Known Issues</h2>
 
 <ul>
-    <li>holy mother of lag why does it stop responding every
-    time it tries to perform an action (prob something w/ the threads or maybe im overthinking)</li>
-    <li>adding a song that is less than a minute long
-    will crash the program</li>
-    <li>Something will break if a parameter is left blank</li>
     <li>When selecting a file there is a visual error
     that im too lazy to fix where it doesn't remove the
     previously inputted song file thing</li>
+    <li>If given a link to a video from a playlist, it will download every video from said playlist</li>
 </ul>
 
 <p>Thank you for using this tool :)</p>
