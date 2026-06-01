@@ -71,21 +71,23 @@ def to_seconds(dur):
         return "INVALID FORMAT"
 
 
+# Converts .lrc file into plain lyrics and saves plain_lyrics and synced_lyrics
 def synced_to_plain_lyrics():
     global plain_lyrics
     global synced_lyrics
     plain_list = []
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding='utf-8') as file:  # thank you python documentation
         synced_lyrics = file.read()
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding='utf-8') as file:
         lines_list = file.readlines()
     for i in range(len(lines_list)):
         try:
             plain_list.append(lines_list[i].split(" ", maxsplit=1)[1])
         except IndexError:
-            plain_list.append("\n")
+            if i < len(lines_list) - 1:
+                plain_list.append("\n")
 
-    plain_lyrics = "".join(plain_list)  # plain lyrics
+    plain_lyrics = "".join(plain_list)  # converts plain_list into like big string
     return plain_lyrics
 
 
