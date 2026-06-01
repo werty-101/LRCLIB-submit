@@ -133,9 +133,9 @@ class Page1(Base):
                                            message="That song is already in LRCLIB! Are you sure you want to submit it?"
                                            )
                 if q == "yes":
-                    submit_lyrics.test_main()
+                    submit_lyrics.main()
             elif not is_existing:
-                submit_lyrics.test_main()
+                submit_lyrics.main()
             # submit lyrics to function to like break down the lyrics
             # send it to main
 
