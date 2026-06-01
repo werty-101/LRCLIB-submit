@@ -28,6 +28,7 @@
 <p>Doesn't guarantee that these will be added to the tool</p>
 
 <ul>
+    <li>preview lyrics before they are submitted</li>
     <li>Keep track of which songs have been uploaded.</li>
     <li>Create a timed lyrics editor</li>
     <li>Be able to convert videos to mp3 without ffmpeg or install ffmpeg automatically</li>
