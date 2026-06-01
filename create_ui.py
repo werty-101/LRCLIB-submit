@@ -1,10 +1,12 @@
 # imports
 import tkinter as tk
 import submit_lyrics
-from tkinter import filedialog
+import threading
+from tkinter import filedialog, messagebox
 from pathlib import Path
 
-MP3S = Path("songs\\mp3s")
+# constants
+MP3S_FOLDER = Path("songs\\mp3s")
 LYRICS_FOLDER = Path("songs\\lyrics_folder")
 
 # theme colors
@@ -111,16 +113,29 @@ class Page1(Base):
             self.file_dir = file_name
 
         # assign names to submit_lyrics using raw strings
-        def assign_vars(title, artist, album, duration, path):
+        def assign_vars(**kwargs):  # (title, artist, album, duration, path):
             # assign names to submit_lyrics
-            # USE RAW STRINGS
-            # todo: check if fields are filled
-            submit_lyrics.track_name = title.get()
-            submit_lyrics.artist_name = artist.get()
-            submit_lyrics.album_name = album.get()
-            submit_lyrics.duration = duration.get()
-            submit_lyrics.file_path = path
-            submit_lyrics.main()
+            # USE RAW STRINGS, do I need to use raw strings?
+            for i in kwargs:
+                print(i, kwargs[i], kwargs[i].__class__)
+                if kwargs[i] == "":
+                    print(f"{i} is an empty value")
+                    return
+
+            submit_lyrics.track_name = kwargs["title"]
+            submit_lyrics.artist_name = kwargs["artist"]
+            submit_lyrics.album_name = kwargs["album"]
+            submit_lyrics.duration = kwargs["duration"]
+            submit_lyrics.file_path = kwargs["path"]
+            is_existing = submit_lyrics.check_existing()
+            if is_existing:
+                q = messagebox.askquestion(title="Warning",
+                                           message="That song is already in LRCLIB! Are you sure you want to submit it?"
+                                           )
+                if q == "yes":
+                    submit_lyrics.test_main()
+            elif not is_existing:
+                submit_lyrics.test_main()
             # submit lyrics to function to like break down the lyrics
             # send it to main
 
@@ -137,7 +152,7 @@ class Page1(Base):
 
         for x in range(2):
             for y in range(2):
-                # todo: use dictionary lookup table / match case
+                # todo: use dictionary lookup table / match case (maybe)
                 if x + y == 0:
                     label_text = "Song Title Here"
                     entry_key = 0
@@ -181,11 +196,19 @@ class Page1(Base):
 
         # submit button
         b = tk.Button(master=self, text="Submit", width=10, height=2)
-        b.config(command=lambda: assign_vars(entry_field_dict[0],
-                                             entry_field_dict[1],
-                                             entry_field_dict[2],
-                                             entry_field_dict[3],
-                                             self.file_dir))
+        b.config(command=lambda: threading.Thread(target=assign_vars, kwargs={'title': entry_field_dict[0].get(),
+                                                                              'artist': entry_field_dict[1].get(),
+                                                                              'album': entry_field_dict[2].get(),
+                                                                              'duration': entry_field_dict[3].get(),
+                                                                              'path': self.file_dir
+                                                                              }
+                                                  ).start()
+                 )
+        # assign_vars(title=entry_field_dict[0],
+        #                                              artist=entry_field_dict[1],
+        #                                              album=entry_field_dict[2],
+        #                                              duration=entry_field_dict[3],
+        #                                              path=self.file_dir)
         b.grid(row=3, column=0, columnspan=2, pady=(20, 50), sticky="n")
 
 
@@ -214,7 +237,8 @@ class Page2(Base):
         entry_container.grid(row=0, column=0)
 
         search_yt_button = tk.Button(self, text="Download", width=10, height=2)
-        search_yt_button.config(command=lambda: search_yt(link_entry, MP3S))
+        search_yt_button.config(command=lambda: threading.Thread(target=search_yt, args=(link_entry, MP3S_FOLDER)
+                                                                 ).start())
         search_yt_button.grid(row=1, column=0, sticky="n", pady=(0, 200))
 
         def search_yt(entry, path):
