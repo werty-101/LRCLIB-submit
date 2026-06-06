@@ -1,6 +1,5 @@
 # created by virtualenv automatically
-.env
 .venv/
 .idea/
-main.py
-to_be_added.txt
+useless/
+songs/

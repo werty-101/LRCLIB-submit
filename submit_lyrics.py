@@ -50,6 +50,7 @@ def solve_challenge(prefix: str, target_hex: str) -> str:
     print(f"nonce: {str(nonce)}")
     return str(nonce)
 
+
 # converts (hh:mm:ss) into seconds
 def to_seconds(dur):
     if dur.__class__ == str:
@@ -60,39 +61,60 @@ def to_seconds(dur):
                     dur_split[i+1] = int(dur_split[i+1])
                     dur_split[i+1] += int(dur_split[i]) * 60
             return int(dur_split[len(dur_split) - 1])
-        # TODO: CHECK FOR CASES WHERE THERE IS A STRING THAT CONTAINS ":" PROB USE TRY
-        # TODO: fix issue where a song is less than a min long, ss comes up as str
-        else:
+        try:
+            return int(dur)
+        except ValueError:
             return "INVALID STRING"
-    elif dur.__class__ is float:
-        return int(round(dur))
-    elif dur.__class__ is int:
-        return dur
+
     else:
         print(dur, dur.__class__)
         return "INVALID FORMAT"
 
 
+# Converts .lrc file into plain lyrics and saves plain_lyrics and synced_lyrics
 def synced_to_plain_lyrics():
     global plain_lyrics
     global synced_lyrics
     plain_list = []
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding='utf-8') as file:  # thank you python documentation
         synced_lyrics = file.read()
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding='utf-8') as file:
         lines_list = file.readlines()
     for i in range(len(lines_list)):
         try:
             plain_list.append(lines_list[i].split(" ", maxsplit=1)[1])
         except IndexError:
-            plain_list.append("\n")
+            if i < len(lines_list) - 1:
+                plain_list.append("\n")
 
-    plain_lyrics = "".join(plain_list)  # plain lyrics
+    plain_lyrics = "".join(plain_list)  # converts plain_list into like big string
     return plain_lyrics
 
-# todo: check if song is already in LRCLIB by performing /api/get-cached with vars from above
+
+# checks if there is an existing song with the same parameters in LRCLIB
+def check_existing():
+
+    url = "https://lrclib.net/api/get-cached"
+    params = {'artist_name': artist_name,
+              'track_name': track_name,
+              'album_name': album_name,
+              'duration': to_seconds(duration)}
+    header = {"Content-Type": "application/json",
+              'User-Agent': 'LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)'}
+
+    r = requests.get(url, params=params, headers=header)
+
+    if r.status_code == 200:
+        print(r.json())
+        return True
+    elif r.status_code == 404:
+        return False
+    else:
+        print(f"unknown error, r.status_code: {r.status_code}")
+        return None
 
 
+# converts youtube video link to mp3 and saves it to path (MP3_FOLDER)
 def yt_to_mp3(path):
     ydl_options = {
         'format': 'm4a/bestaudio/best',
@@ -107,13 +129,15 @@ def yt_to_mp3(path):
         ydl.download([yt_link])
 
 
+# Main func, API calls to request-challenge and publish
 def main():
 
     # TODO: check if fields are filled
     # if val = "" then print('you must fill the required fields')
 
     url = "https://lrclib.net/api/request-challenge"
-    header = {'User-Agent': 'LRCLIB-submit v?.?.? (https://github.com/werty-101/rmm-youtube-bot)'}
+    header = {"Content-Type": "application/json",
+              'User-Agent': 'LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)'}
 
     r = requests.post(url, headers=header)
 
@@ -124,7 +148,7 @@ def main():
     url = "https://lrclib.net/api/publish"
     header = {"X-Publish-Token": f"{prefix}:{nonce}",
               "Content-Type": "application/json",
-              "User-Agent": "rmm youtube bot v?.?.? (https://github.com/werty-101/rmm-youtube-bot)"}
+              "User-Agent": "LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)"}
     data = {"trackName": track_name,
             "artistName": artist_name,
             "albumName": album_name,
