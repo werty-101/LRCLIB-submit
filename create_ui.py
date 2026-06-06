@@ -5,9 +5,12 @@ import threading
 from tkinter import filedialog, messagebox
 from pathlib import Path
 
-# constants
+# folder constants, creates folder before assigning to variable
 MP3S_FOLDER = Path("songs\\mp3s")
 LYRICS_FOLDER = Path("songs\\lyrics_folder")
+
+MP3S_FOLDER.mkdir(parents=True, exist_ok=True)
+LYRICS_FOLDER.mkdir(exist_ok=True)
 
 # theme colors
 dark_mode_colors = {
