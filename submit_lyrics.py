@@ -94,7 +94,7 @@ def synced_to_plain_lyrics():
 # checks if there is an existing song with the same parameters in LRCLIB
 def check_existing():
 
-    url = "https://lrclib.net/api/get"
+    url = "https://lrclib.net/api/get-cached"
     params = {'artist_name': artist_name,
               'track_name': track_name,
               'album_name': album_name,
@@ -105,6 +105,7 @@ def check_existing():
     r = requests.get(url, params=params, headers=header)
 
     if r.status_code == 200:
+        print(r.json())
         return True
     elif r.status_code == 404:
         return False
