@@ -18,20 +18,21 @@
 
 <ol>
     <li>Go to <a href="https://subtitletools.com/timed-lyrics-editor">Timed Lyrics Editor</a> and create a .lrc file. 
-        Note: You only need to use the lyrics and syncer tab, do not add metadata</li>
-    <li>Open up the tool and fill in all the spaces</li>
-    <li>Click "Submit"</li>
+        Note: You only need to use the lyrics and syncer tab, do not add metadata.</li>
+    <li>Open up the tool and fill in all the spaces.</li>
+    <li>Click "Submit."</li>
 </ol>
 
 <h2>Future Plans</h2>
 
-<p>Doesn't guarantee that these will be added to the tool</p>
+<p>Doesn't guarantee that these will be added to the tool.</p>
 
 <ul>
-    <li>preview lyrics before they are submitted</li>
+    <li>Preview lyrics before they are submitted.</li>
     <li>Keep track of which songs have been uploaded.</li>
-    <li>Create a timed lyrics editor</li>
-    <li>Be able to convert videos to mp3 without ffmpeg or install ffmpeg automatically</li>
+    <li>Add themes and custom themes</li>
+    <li>Create a timed lyrics editor.</li>
+    <li>Be able to convert videos to mp3 without ffmpeg or install ffmpeg automatically.</li>
 </ul>
 
 <h2>Known Issues</h2>
@@ -39,8 +40,8 @@
 <ul>
     <li>When selecting a file there is a visual error
     that im too lazy to fix where it doesn't remove the
-    previously inputted song file thing</li>
-    <li>If given a link to a video from a playlist, it will download every video from said playlist</li>
+    previously inputted song file thing.</li>
+    <li>If given a link to a video from a playlist, it will download every video from said playlist.</li>
 </ul>
 
 <p>Thank you for using this tool :)</p>
