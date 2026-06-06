@@ -15,6 +15,8 @@ yt_link = ""
 synced_lyrics = ""
 plain_lyrics = ""
 
+USER_AGENT = "LRCLIB-submit v1.0.0 (https://github.com/werty-101/LRCLIB-submit)"
+
 
 # verifies nonce once calculated by solve_challenge
 def verify_nonce(result, target) -> bool:
@@ -100,7 +102,7 @@ def check_existing():
               'album_name': album_name,
               'duration': to_seconds(duration)}
     header = {"Content-Type": "application/json",
-              'User-Agent': 'LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)'}
+              'User-Agent': f'{USER_AGENT}'}
 
     r = requests.get(url, params=params, headers=header)
 
@@ -137,7 +139,7 @@ def main():
 
     url = "https://lrclib.net/api/request-challenge"
     header = {"Content-Type": "application/json",
-              'User-Agent': 'LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)'}
+              'User-Agent': f'{USER_AGENT}'}
 
     r = requests.post(url, headers=header)
 
@@ -148,7 +150,7 @@ def main():
     url = "https://lrclib.net/api/publish"
     header = {"X-Publish-Token": f"{prefix}:{nonce}",
               "Content-Type": "application/json",
-              "User-Agent": "LRCLIB-submit v?.?.? (https://github.com/werty-101/LRCLIB-submit)"}
+              "User-Agent": f"{USER_AGENT}"}
     data = {"trackName": track_name,
             "artistName": artist_name,
             "albumName": album_name,
