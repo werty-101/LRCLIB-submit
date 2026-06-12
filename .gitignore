@@ -7,3 +7,4 @@ LLRC_Submit_Icon.ico
 LRCLIB Submit.spec
 build/
 dist/
+create_ui.py
