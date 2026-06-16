@@ -31,15 +31,10 @@ COLOR_THEMES = {
 
 # LRCLIB submit
 class Page1(QWidget):
-    def __init__(self, parent_obj):
+    def __init__(self):
         super().__init__()
 
-        self.parent = parent_obj
-        self.current_theme = COLOR_THEMES[self.parent.current_theme]
-        self.update_theme()
-        # TODO: parent_obj.current_theme does not change if switch_theme() is called
-        # TODO: maybe add something like update_theme() at the start of the class
-        # maybe fix for future implementation of like new colors
+        self.current_theme = None
 
         # setup page layout
         page_layout = QGridLayout(self)
@@ -81,24 +76,21 @@ class Page1(QWidget):
             input_list.append(text_input)
             x += 1
 
-        label2 = QLabel("PAGE 1")
-        label3 = QLabel("PAGE 1")
-        label4 = QLabel("INSERT PATH READ ONLY TEXT")
-        label5 = QLabel("SUBMIT BUTTON HERE")
-
-        # TODO: add browse lyrics input thing
+        # Builds the file frame for inputting file title and input box as well as "browse" button
 
         file_frame = QWidget()
         file_frame_layout = QGridLayout(file_frame)
 
-        file_label = QLabel("Lyrics File Path")
+        file_label = QLabel("Lyrics File")
 
         file_input = QLineEdit()
         file_input.setFixedWidth(200)
 
         browse_button = QPushButton("Browse")
-        browse_button.setFixedHeight(35)
-        browse_button.setFixedWidth(70)
+        browse_button.setFixedHeight(30)
+        browse_button.setFixedWidth(75)
+
+        # add widgets to the file frame
 
         file_frame_layout.setVerticalSpacing(0)
         file_frame_layout.setHorizontalSpacing(5)
@@ -106,14 +98,21 @@ class Page1(QWidget):
         file_frame_layout.addWidget(file_input, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
         file_frame_layout.addWidget(browse_button, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
+        # add file frame to the page frame thing
 
         #page_layout.addWidget(title_box, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
         #page_layout.addWidget(artist_box, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         page_layout.addWidget(file_frame, 3, 0, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(label5, 4, 0)
 
-    def update_theme(self):
-        print(f"Page1 current_theme: {self.parent.current_theme}")
+        submit_button = QPushButton("Submit")
+        submit_button.setFixedHeight(45)
+        submit_button.setFixedWidth(85)
+
+        page_layout.addWidget(submit_button, 4, 0, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+
+
+    def update_theme(self, theme):
+        self.current_theme = theme
 
         self.setStyleSheet(f"""
             QLabel {{
@@ -128,16 +127,26 @@ class Page1(QWidget):
             }}
             
             QPushButton {{
-                border: 1px ridge {self.current_theme["secondary"]};
+                color: {self.current_theme["secondary"]};
+                background-color: {self.current_theme["highlight"]};
             }}
+            
+            QPushButton:hover {{
+                color: {self.current_theme["highlight"]};
+                background-color: {self.current_theme["accent"]};
+            }}
+            
+            QPushButton:pressed {{
+                color: {self.current_theme["highlight"]};
+                background-color: {self.current_theme["secondary"]};
+            }}
+            
         """)
-
-
 
 
 # youtube to mp3 page
 class Page2(QWidget):
-    def __init__(self, parent_obj):
+    def __init__(self):
         super().__init__()
 
         # setup page layout
@@ -157,19 +166,10 @@ class MainWindow(QMainWindow):
         self.current_theme = None
         self.active_button = None
 
+        self.p1 = Page1()
+        self.p2 = Page2()
+
         self.switch_theme('dark_mode')
-
-        self.p1 = Page1(self)
-        self.p2 = Page2(self)
-
-
-        # TODO: fix error when like using switch_theme() it only partially changes the theme
-        #  color changes after first implementation, maybe add like a function inside self.swtich_theme
-        #  that triggers for the rest of the children
-
-        #self.switch_theme('light_mode')
-
-        # TODO: add content to secondary container
 
         # main container for the entire WINDOW
 
@@ -258,6 +258,8 @@ class MainWindow(QMainWindow):
     """)
 
         self.current_theme = theme_name
+
+        self.p1.update_theme(current_theme)
 
 
 
