@@ -1,7 +1,8 @@
 import sys
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget,
                                QHBoxLayout, QVBoxLayout, QPushButton,
-                               QStackedWidget, QLabel, QGridLayout, QLineEdit)
+                               QStackedWidget, QLabel, QGridLayout,
+                               QLineEdit, QSizePolicy)
 from PySide6.QtCore import Qt
 
 
@@ -35,47 +36,101 @@ class Page1(QWidget):
 
         self.parent = parent_obj
         self.current_theme = COLOR_THEMES[self.parent.current_theme]
-        print(self.current_theme)
+        self.update_theme()
         # TODO: parent_obj.current_theme does not change if switch_theme() is called
         # TODO: maybe add something like update_theme() at the start of the class
+        # maybe fix for future implementation of like new colors
 
         # setup page layout
         page_layout = QGridLayout(self)
         page_title = QLabel("Submit Lyrics to LRCLIB")
         page_title.setStyleSheet("font-size: 24pt")
-        # TODO: Add QWidget with QVlayout to place title of input box and stuff
+        #page_title.setWordWrap(True)
+        page_title.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
+        page_title.setMinimumWidth(250)
 
-        title_box = QWidget()
-        title_box_layout = QVBoxLayout(title_box)
-        title_box_layout.setSpacing(5)
-        title_box_layout.setContentsMargins(0, 0, 0, 0)
-        title_label = QLabel("Song Title")
-        title_label.setStyleSheet("font-size: 12pt")
-        title_input = QLineEdit()
-        title_input.setFixedWidth(120)
-        title_input.setStyleSheet("background-color: #FFFFFF; color: #000000;")
+        page_layout.addWidget(page_title, 0, 0, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        title_box_layout.addWidget(title_label, alignment=Qt.AlignmentFlag.AlignBottom)
-        title_box_layout.addWidget(title_input, alignment=Qt.AlignmentFlag.AlignTop)
+        grid_layout_text = ["Song Title", "Artist Name", "Album Name", "Duration"]
+        input_list = []
+
+        # creates qwidgets as frames for text input boxes + labels above boxes then places qwidgets in page_layout
+        y = 1
+        x = 0
+        for i in range(len(grid_layout_text)):
+            if x > 1:
+                x = 0
+                y += 1
+            frame = QWidget()
+            frame_layout = QVBoxLayout(frame)
+            frame_layout.setSpacing(5)
+            frame_layout.setContentsMargins(0, 0, 0, 0)
+
+            label = QLabel(grid_layout_text[i])
+
+            text_input = QLineEdit()
+            text_input.setFixedWidth(120)
+            text_input.setFixedHeight(20)
+            #text_input.setStyleSheet("background-color: #FFFFFF; color: #000000; font-size: 12pt; border: none;")
+
+            frame_layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignBottom)
+            frame_layout.addWidget(text_input, alignment=Qt.AlignmentFlag.AlignTop)
+
+            page_layout.addWidget(frame, y, x, alignment=Qt.AlignmentFlag.AlignCenter)
+            print(y, x)
+            input_list.append(text_input)
+            x += 1
 
         label2 = QLabel("PAGE 1")
         label3 = QLabel("PAGE 1")
-        label4 = QLabel("PAGE 1")
-        label5 = QLabel("PAGE 1")
+        label4 = QLabel("INSERT PATH READ ONLY TEXT")
+        label5 = QLabel("SUBMIT BUTTON HERE")
+
+        # TODO: add browse lyrics input thing
+
+        file_frame = QWidget()
+        file_frame_layout = QGridLayout(file_frame)
+
+        file_label = QLabel("Lyrics File Path")
+
+        file_input = QLineEdit()
+        file_input.setFixedWidth(200)
+
+        browse_button = QPushButton("Browse")
+        browse_button.setFixedHeight(35)
+        browse_button.setFixedWidth(70)
+
+        file_frame_layout.setVerticalSpacing(0)
+        file_frame_layout.setHorizontalSpacing(5)
+        file_frame_layout.addWidget(file_label, 0, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        file_frame_layout.addWidget(file_input, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        file_frame_layout.addWidget(browse_button, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter)
 
 
-        page_layout.addWidget(page_title, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
-        page_layout.addWidget(title_box, 1, 0)
-        page_layout.addWidget(label3, 2, 0)
-        page_layout.addWidget(label4, 3, 0)
+        #page_layout.addWidget(title_box, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        #page_layout.addWidget(artist_box, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
+        page_layout.addWidget(file_frame, 3, 0, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
         page_layout.addWidget(label5, 4, 0)
 
     def update_theme(self):
-        # label.setStyleSheet(f"""QLabel {{
-        #    background-color: {self.current_theme['secondary']};
-        #    font-size: 24pt;
-        # }}""")
-        print(f"Page1 current_theme: {self.current_theme}")
+        print(f"Page1 current_theme: {self.parent.current_theme}")
+
+        self.setStyleSheet(f"""
+            QLabel {{
+                font-size: 12pt
+            }}
+            
+            QLineEdit {{
+                background-color: #FFFFFF;
+                color: #000000;
+                font-size: 12pt;
+                border: none;
+            }}
+            
+            QPushButton {{
+                border: 1px ridge {self.current_theme["secondary"]};
+            }}
+        """)
 
 
 
@@ -109,6 +164,8 @@ class MainWindow(QMainWindow):
 
 
         # TODO: fix error when like using switch_theme() it only partially changes the theme
+        #  color changes after first implementation, maybe add like a function inside self.swtich_theme
+        #  that triggers for the rest of the children
 
         #self.switch_theme('light_mode')
 
@@ -145,7 +202,7 @@ class MainWindow(QMainWindow):
             sidebar_layout.addWidget(button)
             button_list.append(button)
 
-        # anything after this in the sidebar will make it appear on the bottom for some reason
+        # anything after this in the SIDEBAR will make it appear on the bottom for some reason
         sidebar_layout.addStretch()
 
         button_list[0].clicked.connect(lambda: self.page_switch(button_list[0], 0))
@@ -206,13 +263,6 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setStyleSheet(f"""
-
-        QWidget {{
-            color: black;
-        }}
-
-    """)
 
     window = MainWindow("LRCLIB Submit", (450 + 90, 450))
 
