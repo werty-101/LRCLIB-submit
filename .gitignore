@@ -3,6 +3,7 @@
 .idea/
 useless/
 songs/
+__pycache__/
 LLRC_Submit_Icon.ico
 LRCLIB Submit.spec
 build/
