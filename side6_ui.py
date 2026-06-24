@@ -1,10 +1,18 @@
 import sys
+import submit_lyrics
+from pathlib import Path
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget,
                                QHBoxLayout, QVBoxLayout, QPushButton,
                                QStackedWidget, QLabel, QGridLayout,
                                QLineEdit, QSizePolicy)
 from PySide6.QtCore import Qt
 
+# folder constants, creates folder before assigning to variable
+MP3S_FOLDER = Path("songs\\mp3s")
+LYRICS_FOLDER = Path("songs\\lyrics_folder")
+
+MP3S_FOLDER.mkdir(parents=True, exist_ok=True)
+LYRICS_FOLDER.mkdir(exist_ok=True)
 
 COLOR_THEMES = {
 
@@ -65,7 +73,7 @@ class Page1(QWidget):
 
             text_input = QLineEdit()
             text_input.setFixedWidth(120)
-            text_input.setFixedHeight(20)
+            #text_input.setFixedHeight(20)
             #text_input.setStyleSheet("background-color: #FFFFFF; color: #000000; font-size: 12pt; border: none;")
 
             frame_layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignBottom)
@@ -124,6 +132,7 @@ class Page1(QWidget):
                 color: #000000;
                 font-size: 12pt;
                 border: none;
+                height: 20px;
             }}
             
             QPushButton {{
@@ -149,11 +158,80 @@ class Page2(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.current_theme = None
+
         # setup page layout
         page_layout = QGridLayout(self)
-        label = QLabel("PAGE 2")
+        page_title = QLabel("YouTube to MP3")
+        page_title.setStyleSheet("font-size: 24pt")
 
-        page_layout.addWidget(label, 0, 0)
+        # QLineEdit here
+        link_input_frame = QWidget(self)
+        link_input_layout = QVBoxLayout(link_input_frame)
+
+        link_input_label = QLabel("Insert Link") 
+
+        link_input = QLineEdit(self)
+        link_input.setFixedWidth(200)
+
+        link_input_layout.addWidget(link_input_label)
+        link_input_layout.addWidget(link_input)
+
+
+        # QPushButton to download video
+        download_button = QPushButton("Download")
+        download_button.setFixedHeight(50)
+        download_button.setFixedWidth(100)
+        download_button.clicked.connect(lambda: self.download_video(link_input.text()))
+
+        # Add widgets here
+        page_layout.addWidget(page_title, 0, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        page_layout.addWidget(link_input_frame, 1, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+        page_layout.addWidget(download_button, 2, 0, alignment=Qt.AlignmentFlag.AlignCenter)
+
+
+    # function to communicate with submit_lyrics.py
+    def download_video(self, link):
+        submit_lyrics.yt_link = link
+        submit_lyrics.yt_to_mp3("songs\mp3s")
+
+
+
+    # styling TODO: would be nice if it inherited styling from a base class
+    def update_theme(self, theme):
+        self.current_theme = theme
+
+        self.setStyleSheet(f"""
+            QLabel {{
+                font-size: 12pt
+            }}
+                           
+            QLineEdit {{
+                background-color: #FFFFFF;
+                color: #000000;
+                font-size: 12pt;
+                border: none;
+                height: 20px;
+            }}
+                           
+            QPushButton {{
+                color: {self.current_theme["secondary"]};
+                background-color: {self.current_theme["highlight"]};
+            }}
+
+            QPushButton:hover {{
+                color: {self.current_theme["highlight"]};
+                background-color: {self.current_theme["accent"]};
+            }}
+
+            QPushButton:pressed {{
+                color: {self.current_theme["highlight"]};
+                background-color: {self.current_theme["secondary"]};
+            }}
+
+        """)
+
+
 
 
 class MainWindow(QMainWindow):
@@ -260,6 +338,7 @@ class MainWindow(QMainWindow):
         self.current_theme = theme_name
 
         self.p1.update_theme(current_theme)
+        self.p2.update_theme(current_theme)
 
 
 
